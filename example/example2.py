@@ -13,8 +13,8 @@ if __name__ == '__main__':
     width = 4
     height = 4
 
-    os.environ["gym_maze_width"] = str(5)
-    os.environ["gym_maze_height"] = str(5)
+    os.environ["gym_maze_width"] = str(6)
+    os.environ["gym_maze_height"] = str(6)
     os.environ["gym_maze_screen_width"] = str(640)
     os.environ["gym_maze_screen_height"] = str(480)
     os.environ["gym_maze_no_random"] = str(0)
@@ -45,6 +45,8 @@ if __name__ == '__main__':
     maximum_loss_rate = .5
     epsilon_boost = .05
 
+    action_distrib = [0, 0, 0, 0]
+
     while True:
 
         # Reset environment
@@ -59,16 +61,25 @@ if __name__ == '__main__':
         # Reset Temporary memory
         temporary_memory.clear()
 
+        # Reset action distrib
+        action_distrib = [0, 0, 0, 0]
+
         while not terminal:
             # Draw environment on screen
-            env.render()  # For image you MUST call this
+            #env.render()  # For image you MUST call this
 
             # Draw action from distribution
             a = agent.act(s)
+            action_distrib[a] += 1
 
             # Perform action in environment
             s1, r, t, _ = env.step(a)
             terminal = t
+
+            if not t:
+                print(r)
+
+
 
             # Temporary Experience replay
             temporary_memory.append((s, a, r, s1, t))
@@ -110,7 +121,9 @@ if __name__ == '__main__':
             "epsilon": agent.epsilon,
             "loss": agent.average_loss(),
             "terminal": terminal,
-            "loss_rate": recent_games.count(False) / (len(recent_games)+0.0001)
+            "loss_rate": recent_games.count(False) / (len(recent_games)+0.0001),
+            "action_distrib": action_distrib,
+            "replay": len(agent.memory)
         }))
 
 

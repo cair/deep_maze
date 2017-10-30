@@ -356,8 +356,9 @@ class MazeGame(object):
 
         if self.player == self.target:
             self.terminal = True
+            return self._get_state(), 1, self.terminal, {}
 
-        return self._get_state(), 1, self.terminal, {}
+        return self._get_state(), -1, self.terminal, {}
 
     def next_level(self):
         self.seed += "!"
