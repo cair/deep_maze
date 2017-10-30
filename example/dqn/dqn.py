@@ -63,9 +63,13 @@ class DQN:
         #model.add(Dense(64, activation='relu'))
         #model.add(Dense(self.action_size, activation='linear'))
 
-        model.add(Conv2D(32, (8, 8), strides=(4, 4), activation="relu", input_shape=self.state_size, data_format="channels_last"))
-        model.add(Conv2D(64, (4, 4), strides=(2, 2), activation="relu",))
-        model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu",))
+        #model.add(Conv2D(32, (8, 8), strides=(4, 4), activation="relu", input_shape=self.state_size, data_format="channels_last"))
+        #model.add(Conv2D(64, (4, 4), strides=(2, 2), activation="relu",))
+        #model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu",))
+
+        model.add(Conv2D(32, (1, 1), strides=(1, 1), activation="relu", input_shape=self.state_size, data_format="channels_last"))
+        model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
+        model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
         model.add(Flatten())
         model.add(Dense(512,  activation="relu"))
         model.add(Dense(self.action_size, activation='linear'))

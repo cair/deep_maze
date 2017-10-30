@@ -262,6 +262,18 @@ class MazeGame(object):
         elif self.state_representation == "array_flat":
             state = np.array(self.maze.state_flat())
             return np.expand_dims(state, axis=0)
+        elif self.state_representation == "array_3d":
+            state = np.zeros(shape=(1, self.w, self.h, 4))
+            for cell in self.maze.cells:
+                if 'n' in cell.walls:
+                    state[0, cell.x, cell.y, 0] = 1
+                if 's' in cell.walls:
+                    state[0, cell.x, cell.y, 1] = 1
+                if 'e' in cell.walls:
+                    state[0, cell.x, cell.y, 2] = 1
+                if 'w' in cell.walls:
+                    state[0, cell.x, cell.y, 3] = 1
+            return state
 
     def reset(self):
         self.change_map_counter += 1

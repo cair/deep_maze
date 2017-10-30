@@ -7,7 +7,7 @@ from gym_maze.envs.maze import MazeGame
 
 
 class MazeEnv(gym.Env):
-    metadata = {'render.modes': ['array', 'array_flat', 'image', 'image_gray', 'human']}
+    metadata = {'render.modes': ['human']}
 
     def __init__(self):
 
@@ -33,8 +33,5 @@ class MazeEnv(gym.Env):
     def _reset(self):
         return self.game.reset()
 
-    def _render(self, mode='image', close=False):
-        if mode == "human":
-            mode = "image"
-        self.game.state_representation = mode
+    def _render(self, mode='human', close=False):
         return self.game.render()
