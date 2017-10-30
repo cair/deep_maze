@@ -1,10 +1,12 @@
 import json
-
-import logger
 from collections import deque
 
-import pyximport; pyximport.install()
-from maze import MazeGame
+import pyximport;
+
+from gym_maze.envs import logger
+
+pyximport.install()
+from gym_maze.envs.maze import MazeGame
 from dqn.dqn import DQN
 
 if __name__ == '__main__':

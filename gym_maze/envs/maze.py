@@ -189,7 +189,7 @@ class MazeGame(object):
         self.maze = Maze.generate(width, height)
         self.player = self._get_random_position()
         self.target = self._get_random_position()
-        pygame.display.set_caption("PerMaze")
+        pygame.display.set_caption("DeepMaze")
         self.screen = pygame.display.set_mode((screen_width + 5, screen_height + 5), 0, 32)
         self.surface = pygame.Surface(self.screen.get_size())
         self.surface = self.surface.convert()
@@ -209,8 +209,8 @@ class MazeGame(object):
             self.img_kim = pygame.image.load(BytesIO(base64.b64decode(self.base_kim)))
             self.img_kim = pygame.transform.scale(self.img_kim, (int(self.tile_w), int(self.tile_h)))
         else:
-            self.img_kim = pygame.Surface((int(self.tile_w) - 5, int(self.tile_h) - 5))
-            self.img_trump = pygame.Surface((int(self.tile_w) - 5, int(self.tile_h) - 5))
+            self.img_kim = pygame.Surface((int(self.tile_w), int(self.tile_h) - 5))
+            self.img_trump = pygame.Surface((int(self.tile_w), int(self.tile_h) - 5))
             self.img_kim.fill((255, 0, 0))
             self.img_trump.fill((0, 255, 0))
 
@@ -241,8 +241,8 @@ class MazeGame(object):
             arr = scipy.misc.imresize(arr, self.image_state_size)
             arr = arr / 255
 
-            im = Image.fromarray(np.uint8(arr*255))
-            im.save("test.png")
+            #im = Image.fromarray(np.uint8(arr*255))
+            #im.save("test.png")
 
             arr = np.expand_dims(arr, axis=0)
             return arr
@@ -304,14 +304,14 @@ class MazeGame(object):
 
         # Draw target
         pygame.Surface.blit(self.maze_surface, self.img_trump, (
-            (self.player[0] * self.tile_w) + 5,
-            (self.player[1] * self.tile_h) + 5
+            (self.player[0] * self.tile_w) + 3,
+            (self.player[1] * self.tile_h) + 3
         ))
 
         # Draw target
         pygame.Surface.blit(self.maze_surface, self.img_kim, (
-            (self.target[0] * self.tile_w) + 5,
-            (self.target[1] * self.tile_h) + 5
+            (self.target[0] * self.tile_w) + 3,
+            (self.target[1] * self.tile_h) + 3
         ))
 
         self.surface.blit(self.maze_surface, (0, 0))
