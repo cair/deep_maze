@@ -2,7 +2,7 @@
 import numpy as np
 from collections import deque
 from keras.models import Sequential
-from keras.layers import Dense, Flatten, Conv2D, K
+from keras.layers import Dense, Flatten, Conv2D, K, LSTM
 from keras.optimizers import Adam, RMSprop
 
 
@@ -11,12 +11,12 @@ class DQN:
 
         self.state_size = state_size[1:]
         self.action_size = action_size
-        self.memory = deque(maxlen=2000)
-        self.gamma = 0.95    # discount rate
+        self.memory = deque(maxlen=200000)
+        self.gamma = 0.99    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.learning_rate = 0.001
+        self.learning_rate = 0.00001
         self.model = self._build_model()
         self.cumulative_loss = 0
         self.train_steps = 0
@@ -56,24 +56,24 @@ class DQN:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
 
-        #model.add(Flatten(input_shape=self.state_size))
-        #model.add(Dense(32, input_shape=self.state_size, activation='relu'))
-        #model.add(Dense(64, activation='relu'))
-        #model.add(Dense(64, activation='relu'))
-        #model.add(Dense(64, activation='relu'))
-        #model.add(Dense(self.action_size, activation='linear'))
+        model.add(Flatten(input_shape=self.state_size))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(self.action_size, activation='linear'))
 
         #model.add(Conv2D(32, (8, 8), strides=(4, 4), activation="relu", input_shape=self.state_size, data_format="channels_last"))
         #model.add(Conv2D(64, (4, 4), strides=(2, 2), activation="relu",))
         #model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu",))
 
-        model.add(Conv2D(32, (1, 1), strides=(1, 1), activation="relu", input_shape=self.state_size, data_format="channels_last"))
+        """model.add(Conv2D(32, (1, 1), strides=(1, 1), activation="relu", input_shape=self.state_size, data_format="channels_last"))
         model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
         model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
         model.add(Flatten())
-        model.add(Dense(512,  activation="relu"))
-        model.add(Dense(self.action_size, activation='linear'))
+        model.add(Dense(512,  activation="relu"))"
+        model.add(Dense(self.action_size, activation='linear'))"""
 
+        # DQN.huber_loss
         model.compile(loss=DQN.huber_loss, optimizer=Adam(lr=self.learning_rate))
         return model
 
@@ -88,7 +88,8 @@ class DQN:
 
     def replay(self, batch_size):
 
-        mini_batch = [self.memory[idx] for idx in np.random.choice(len(self.memory), size=batch_size)]
+        rnd = np.random.choice(len(self.memory), size=batch_size)
+        mini_batch = [self.memory[idx] for idx in rnd]
         for state, action, reward, next_state, done in mini_batch:
             target = reward
             if not done:

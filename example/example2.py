@@ -13,14 +13,14 @@ if __name__ == '__main__':
     width = 4
     height = 4
 
-    os.environ["gym_maze_width"] = str(6)
-    os.environ["gym_maze_height"] = str(6)
+    os.environ["gym_maze_width"] = str(5)
+    os.environ["gym_maze_height"] = str(5)
     os.environ["gym_maze_screen_width"] = str(640)
     os.environ["gym_maze_screen_height"] = str(480)
     os.environ["gym_maze_no_random"] = str(0)
     os.environ["gym_maze_change_map_after"] = str(10000000000000)
     os.environ["gym_maze_state_representation"] = "array_3d"
-    os.environ["gym_maze_funny"] = str(0)
+    os.environ["gym_maze_funny"] = str(1)
     os.environ["image_state_width"] = str(80)
     os.environ["image_state_height"] = str(80)
 
@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     # Temporary memory
     temporary_memory = []
+    minimum_memory_size_before_train = 50000
 
     temporary_memory_max_steps = 30
     timeout = 50
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     # Failure compensation
     recent_games = deque(maxlen=10)
     maximum_loss_rate = .5
-    epsilon_boost = .05
+    epsilon_boost = .01
 
     action_distrib = [0, 0, 0, 0]
 
@@ -76,11 +77,6 @@ if __name__ == '__main__':
             s1, r, t, _ = env.step(a)
             terminal = t
 
-            if not t:
-                print(r)
-
-
-
             # Temporary Experience replay
             temporary_memory.append((s, a, r, s1, t))
 
@@ -107,11 +103,11 @@ if __name__ == '__main__':
             # Add a victory
             recent_games.append(True)
 
-        for experience in temporary_memory:
-            agent.remember(*experience)
+            for experience in temporary_memory:
+                agent.remember(*experience)
 
         # Train
-        if len(agent.memory) > batch_size:
+        if len(agent.memory) > minimum_memory_size_before_train:
             agent.replay(batch_size)
 
         env.render()
