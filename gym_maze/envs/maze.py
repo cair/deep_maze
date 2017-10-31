@@ -109,6 +109,11 @@ class Maze(object):
         else:
             return None
 
+    def get_index(self, pos):
+        x, y = pos
+        return x + y * self.width
+
+
     def state(self):
         _state = np.zeros(shape=(self.width, self.height, 2), dtype=np.float)
         for cell in self.cells:
@@ -263,7 +268,7 @@ class MazeGame(object):
             state = np.array(self.maze.state_flat())
             return np.expand_dims(state, axis=0)
         elif self.state_representation == "array_3d":
-            state = np.zeros(shape=(1, self.w, self.h, 4))
+            state = np.zeros(shape=(1, self.w, self.h, 6))
             for cell in self.maze.cells:
                 if 'n' in cell.walls:
                     state[0, cell.x, cell.y, 0] = 1
@@ -273,6 +278,10 @@ class MazeGame(object):
                     state[0, cell.x, cell.y, 2] = 1
                 if 'w' in cell.walls:
                     state[0, cell.x, cell.y, 3] = 1
+
+                state[0, self.player[0], self.player[1], 4] = 1
+                state[0, self.target[0], self.target[1], 5] = 1
+
             return state
 
     def reset(self):
