@@ -19,8 +19,8 @@ if __name__ == '__main__':
     os.environ["gym_maze_screen_height"] = str(480)
     os.environ["gym_maze_no_random"] = str(0)
     os.environ["gym_maze_change_map_after"] = str(10000000000000)
-    os.environ["gym_maze_state_representation"] = "array_3d"
-    os.environ["gym_maze_funny"] = str(1)
+    os.environ["gym_maze_state_representation"] = "image"
+    os.environ["gym_maze_funny"] = str(0)
     os.environ["image_state_width"] = str(80)
     os.environ["image_state_height"] = str(80)
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     # Temporary memory
     temporary_memory = []
-    minimum_memory_size_before_train = 50000
+    minimum_memory_size_before_train = 50
 
     temporary_memory_max_steps = 30
     timeout = 50
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # Failure compensation
     recent_games = deque(maxlen=10)
     maximum_loss_rate = .5
-    epsilon_boost = .01
+    epsilon_boost = .009
 
     action_distrib = [0, 0, 0, 0]
 
@@ -63,11 +63,12 @@ if __name__ == '__main__':
         temporary_memory.clear()
 
         # Reset action distrib
+
         action_distrib = [0, 0, 0, 0]
 
         while not terminal:
             # Draw environment on screen
-            #env.render()  # For image you MUST call this
+            env.render()  # For image you MUST call this
 
             # Draw action from distribution
             a = agent.act(s)

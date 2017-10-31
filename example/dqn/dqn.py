@@ -4,7 +4,7 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D, K, LSTM
 from keras.optimizers import Adam, RMSprop
-
+from keras.utils import plot_model
 
 class DQN:
     def __init__(self, state_size, action_size):
@@ -56,25 +56,28 @@ class DQN:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
 
-        model.add(Flatten(input_shape=self.state_size))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
+        #model.add(Flatten(input_shape=self.state_size))
+        #model.add(Dense(64, activation='relu'))
+        #model.add(Dense(64, activation='relu'))
+        #model.add(Dense(64, activation='relu'))
+        #model.add(Dense(self.action_size, activation='linear'))
 
         #model.add(Conv2D(32, (8, 8), strides=(4, 4), activation="relu", input_shape=self.state_size, data_format="channels_last"))
         #model.add(Conv2D(64, (4, 4), strides=(2, 2), activation="relu",))
         #model.add(Conv2D(64, (3, 3), strides=(1, 1), activation="relu",))
 
-        """model.add(Conv2D(32, (1, 1), strides=(1, 1), activation="relu", input_shape=self.state_size, data_format="channels_last"))
-        model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
-        model.add(Conv2D(64, (1, 1), strides=(1, 1), activation="relu",))
+        print(self.state_size)
+
+        model.add(Conv2D(64, (4, 4), padding="same", strides=(4, 4), activation="relu", input_shape=self.state_size, data_format="channels_last"))
+        model.add(Conv2D(64, (3, 3), padding="same", strides=(4, 4), activation="relu",))
+        model.add(Conv2D(64, (2, 2), padding="same", strides=(4, 4), activation="relu",))
         model.add(Flatten())
-        model.add(Dense(512,  activation="relu"))"
-        model.add(Dense(self.action_size, activation='linear'))"""
+        model.add(Dense(512,  activation="relu"))
+        model.add(Dense(self.action_size, activation='linear'))
 
         # DQN.huber_loss
         model.compile(loss=DQN.huber_loss, optimizer=Adam(lr=self.learning_rate))
+        plot_model(model, to_file='model.png', show_shapes=True)
         return model
 
     def remember(self, state, action, reward, next_state, done):
