@@ -293,6 +293,18 @@ class MazeGame(object):
 
         self.maze_surface.fill((0, 0, 0))
 
+        # Draw target
+        pygame.Surface.blit(self.maze_surface, self.img_trump, (
+            (self.player[0] * self.tile_w) + 3,
+            (self.player[1] * self.tile_h) + 3
+        ))
+
+        # Draw target
+        pygame.Surface.blit(self.maze_surface, self.img_kim, (
+            (self.target[0] * self.tile_w) + 3,
+            (self.target[1] * self.tile_h) + 3
+        ))
+
         for cell in self.maze.cells:
             x = (cell.x * self.tile_w)
             y = (cell.y * self.tile_h)
@@ -314,17 +326,7 @@ class MazeGame(object):
                 end = [x + self.tile_w, y + self.tile_h]
                 pygame.draw.line(self.maze_surface, 0xFFFFFF, start, end, 5)
 
-        # Draw target
-        pygame.Surface.blit(self.maze_surface, self.img_trump, (
-            (self.player[0] * self.tile_w) + 3,
-            (self.player[1] * self.tile_h) + 3
-        ))
 
-        # Draw target
-        pygame.Surface.blit(self.maze_surface, self.img_kim, (
-            (self.target[0] * self.tile_w) + 3,
-            (self.target[1] * self.tile_h) + 3
-        ))
 
         self.surface.blit(self.maze_surface, (0, 0))
         self.screen.blit(self.surface, (0, 0))
