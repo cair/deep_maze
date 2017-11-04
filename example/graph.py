@@ -42,18 +42,18 @@ for log_file in log_files:
     data_loss = []
     data_loss_rate = []
     data_steps = []
-    data_epsilon = []
+    data_actions = []
 
     for item in log_file.data:
         data_loss.append(item["loss"])
-        data_loss_rate.append(item["loss_rate"])
-        data_steps.append(item["steps"])
-        data_epsilon.append(item["epsilon"])
+        data_loss_rate.append(item["score"])
+        data_steps.append(item["epoch"])
+        data_actions.append(item["actions"])
 
     loss.plot(data_loss)
     loss_rate.plot(data_loss_rate)
     steps.plot(data_steps)
-    epsilon.plot(data_epsilon)
+    epsilon.plot(data_actions)
 
     fig.savefig("plots/%s.png" % log_file.path)
 
