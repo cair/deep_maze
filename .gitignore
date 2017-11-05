@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+.idea/
+*.h5
+*.png
+*.log

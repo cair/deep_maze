@@ -28,32 +28,32 @@ for log_file in log_files:
 
     fig = plt.figure()
     loss = fig.add_subplot(221)
-    loss_rate = fig.add_subplot(222)
+    phase = fig.add_subplot(222)
     steps = fig.add_subplot(223)
     epsilon = fig.add_subplot(224)
 
     fig.tight_layout()
 
     loss.set_title("Training Loss")
-    loss_rate.set_title("Loss Rate (Victory/Loss)")
+    phase.set_title("Phase")
     steps.set_title("Steps")
     epsilon.set_title("Epsilon")
 
     data_loss = []
-    data_loss_rate = []
+    data_epsilon = []
     data_steps = []
-    data_actions = []
+    data_phase = []
 
     for item in log_file.data:
         data_loss.append(item["loss"])
-        data_loss_rate.append(item["score"])
-        data_steps.append(item["epoch"])
-        data_actions.append(item["actions"])
+        data_steps.append([min(item["optimal"] * 2, item["steps"]), item["optimal"]])
+        data_epsilon.append(item["epsilon"])
+        data_phase.append(1 if item["phase"] == "exploit" else 0)
 
     loss.plot(data_loss)
-    loss_rate.plot(data_loss_rate)
+    phase.plot(data_phase)
     steps.plot(data_steps)
-    epsilon.plot(data_actions)
+    epsilon.plot(data_epsilon)
 
     fig.savefig("plots/%s.png" % log_file.path)
 

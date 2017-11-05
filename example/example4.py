@@ -1,90 +1,136 @@
 import gym
 import gym_maze
 import numpy as np
-import os
 import json
-from collections import deque
-
 from example.logger import logger
 from example.dqn.dqn_example_4 import DQN
 
 if __name__ == '__main__':
-    width = 4
-    height = 4
 
-    os.environ["gym_maze_width"] = str(5)
-    os.environ["gym_maze_height"] = str(5)
-    os.environ["gym_maze_screen_width"] = str(640)
-    os.environ["gym_maze_screen_height"] = str(480)
-    os.environ["gym_maze_no_random"] = str(0)
-    os.environ["gym_maze_change_map_after"] = str(10000000000000)
-    os.environ["gym_maze_state_representation"] = "array_3d"
-    os.environ["gym_maze_funny"] = str(1)
-    os.environ["image_state_width"] = str(80)
-    os.environ["image_state_height"] = str(80)
+    def preprocess(state, agent):
+        new_state = np.zeros(shape=(1, ) + agent.state_size)
+        new_state[:1, :state.shape[0], :state.shape[1], :state.shape[2]] = state
+        return new_state
 
-    env = gym.make("maze-v0")
-    env.render()
+
+    env_list = [
+        "maze-arr-9x9-full-deterministic-v0",
+        "maze-arr-11x11-full-deterministic-v0",
+        "maze-arr-13x13-full-deterministic-v0",
+        "maze-arr-15x15-full-deterministic-v0",
+        "maze-arr-17x17-full-deterministic-v0",
+        #"maze-arr-19x19-full-deterministic-v0",
+        #"maze-arr-25x25-full-deterministic-v0",
+        #"maze-arr-35x35-full-deterministic-v0",
+        #"maze-arr-55x55-full-deterministic-v0"
+    ]
+
+    env = gym.make(env_list[-1])
+    env.reset()
 
     batch_size = 50
-    max_timesteps = 500
-    epochs = 15000
+    epochs = 500
     train_epochs = 8
     memory_size = 1000
+    timeout = 1000
 
     agent = DQN(
-        env.observation_space.shape,
-        env.action_space.shape,
-        batch_size=50,
-        memory_size=1000,
-        train_epochs=8
+        env.observation_space,
+        env.action_space,
+        memory_size=10000,
+        batch_size=64,
+        train_epochs=1,
+        e_min=0,
+        e_max=1.0,
+        e_steps=100000,
+        lr=1e-6,
+        discount=0.95
     )
+    try:
+        agent.load("./model_weights.h5")
+    except:
+        print("cant find weights")
 
-    _s_l = env.observation_space.shape[1]
+    while True:
+        for env_name in env_list:
+            print("Creating env %s" % env_name)
+            env = gym.make(env_name)
+            env.reset()
 
-    for epoch in range(epochs):
+            victories_before_train = 50
+            victories = 0
+            perfect_in_row = 0
+            perfects_before_next = 10
+            agent.epsilon = agent.epsilon_max
+            phase = "exploit"
+            agent.save("./model_weights.h5")
 
-        # Reset environment
-        state = env.reset()
+            epoch = 0
+            while epoch < epochs:
+                epoch += 1
 
-        # Set terminal state to false
-        terminal = False
+                # Reset environment
+                state = env.reset()
+                state = preprocess(state, agent)
+                terminal = False
+                timestep = 0
 
-        # Score
-        epoch_score = 0
+                while not terminal:
+                    timestep += 1
 
-        actions = [0, 0, 0, 0]
+                    # Draw environment on screen
+                    #env.render()  # For image you MUST call this
 
-        for timestep in range(max_timesteps):
-            # Draw environment on screen
-            #env.render()  # For image you MUST call this
+                    # Draw action from distribution
+                    action = agent.act(state, force_exploit=True if phase == "exploit" else False)
 
-            # Draw action from distribution
-            action = agent.act(state)
-            actions[action] += 1
+                    # Perform action in environment
+                    next_state, reward, terminal, info = env.step(action)
+                    next_state = preprocess(next_state, agent)
 
-            # Perform action in environment
-            next_state, reward, terminal, _ = env.step(action)
+                    # Experience replay
+                    agent.remember(state, action, reward, next_state, terminal)
 
-            epoch_score += reward
+                    state = next_state
 
-            # Temporary Experience replay
-            agent.remember(state, action, reward, next_state, terminal)
+                    if terminal:
+                        # Terminal means victory
+                        victories += 1
 
-            if terminal:
-                break
+                        # If it a prefect round, set to test phase
+                        if timestep == info["optimal_path"]:
+                            phase = "exploit"
+                            perfect_in_row += 1
+                        else:
+                            phase = "explore"
+                            perfect_in_row = 0
 
-        if len(agent.memory) > batch_size:
-            agent.replay()
+                        break
+                    elif timestep >= timeout:
+                        agent.epsilon = min(agent.epsilon_max, agent.epsilon + (agent.epsilon_decay * timestep))
+                        phase = "explore"
+                        perfect_in_row = 0
+                        break
 
-        logger.info(json.dumps({
-            "epoch": epoch,
-            "score": epoch_score,
-            "epsilon": agent.epsilon,
-            "loss": agent.average_loss(),
-            "terminal": terminal,
-            "replay": len(agent.memory),
-            "actions": [x / timestep for x in actions]
-        }))
+                if len(agent.memory) > batch_size:
+                    agent.replay(q_table=env.env.q_table)
+
+                env.render()  # For image you MUST call this
+                logger.info(json.dumps({
+                    "epoch": epoch,
+                    "steps": timestep,
+                    "optimal": info["optimal_path"],
+                    "epsilon": agent.epsilon,
+                    "loss": agent.average_loss(),
+                    "terminal": terminal,
+                    "replay": len(agent.memory),
+                    "perfect_in_row": perfect_in_row,
+                    "phase": phase,
+                    "env": env_name
+                }))
+
+                if perfect_in_row >= perfects_before_next:
+                    epoch = epochs
+
 
 

@@ -13,22 +13,9 @@ import os
 
 if __name__ == '__main__':
     
-    # Configure the environment
-    os.environ["gym_maze_width"] = str(5)
-    os.environ["gym_maze_height"] = str(5)
-    os.environ["gym_maze_screen_width"] = str(640)
-    os.environ["gym_maze_screen_height"] = str(480)
-    os.environ["gym_maze_no_random"] = str(0)
-    os.environ["gym_maze_change_map_after"] = str(10000000000000)
-    os.environ["gym_maze_state_representation"] = "image"
-    os.environ["gym_maze_funny"] = str(0)
-    os.environ["image_state_width"] = str(80)
-    os.environ["image_state_height"] = str(80)
-
-    # Create GYM environment
-    env = gym.make("maze-v0")
 
     # Reset environment
+    env = gym.make("maze-arr-11x11-full-deterministic-v0")
     s = env.reset()
 
     # Set terminal state to false
@@ -46,6 +33,82 @@ if __name__ == '__main__':
         terminal = t
 
         s = s1
+```
+
+## Available Environments
+There are several configurations available for gym-maze.
+
+### Naming Convention
+[name]-[representation]-[size_w]x[size_h]-[type]-v0
+
+**name** - Name of the environment
+
+**representation** - How the state is represented to the user. 'Img' delivers a **84x84x3** state while 'Arr' delivers size of the game board (9x9 game delivers  9x9 state)
+
+**size_w** - Indicates width of game board
+
+**size_h** - Indicates height of game board
+
+**type** - Indicates weither RNG is deterministic (non-random) or stochastic (random). There is also a full-random mode that also remove randomness from spawn location
+
+
+### Environment List
+```
+maze-arr-11x11-deterministic-v0
+maze-arr-13x13-deterministic-v0
+maze-arr-15x15-deterministic-v0
+maze-arr-17x17-deterministic-v0
+maze-arr-19x19-deterministic-v0
+maze-arr-25x25-deterministic-v0
+maze-arr-35x35-deterministic-v0
+maze-arr-55x55-deterministic-v0
+maze-arr-9x9-deterministic-v0
+maze-arr-11x11-full-deterministic-v0
+maze-arr-13x13-full-deterministic-v0
+maze-arr-15x15-full-deterministic-v0
+maze-arr-17x17-full-deterministic-v0
+maze-arr-19x19-full-deterministic-v0
+maze-arr-25x25-full-deterministic-v0
+maze-arr-35x35-full-deterministic-v0
+maze-arr-55x55-full-deterministic-v0
+maze-arr-9x9-full-deterministic-v0
+maze-arr-11x11-stochastic-v0
+maze-arr-13x13-stochastic-v0
+maze-arr-15x15-stochastic-v0
+maze-arr-17x17-stochastic-v0
+maze-arr-19x19-stochastic-v0
+maze-arr-25x25-stochastic-v0
+maze-arr-35x35-stochastic-v0
+maze-arr-55x55-stochastic-v0
+maze-arr-9x9-stochastic-v0
+maze-v0
+maze-img-11x11-deterministic-v0
+maze-img-13x13-deterministic-v0
+maze-img-15x15-deterministic-v0
+maze-img-17x17-deterministic-v0
+maze-img-19x19-deterministic-v0
+maze-img-25x25-deterministic-v0
+maze-img-35x35-deterministic-v0
+maze-img-55x55-deterministic-v0
+maze-img-9x9-deterministic-v0
+maze-img-11x11-full-deterministic-v0
+maze-img-13x13-full-deterministic-v0
+maze-img-15x15-full-deterministic-v0
+maze-img-17x17-full-deterministic-v0
+maze-img-19x19-full-deterministic-v0
+maze-img-25x25-full-deterministic-v0
+maze-img-35x35-full-deterministic-v0
+maze-img-55x55-full-deterministic-v0
+maze-img-9x9-full-deterministic-v0
+maze-img-11x11-stochastic-v0
+maze-img-13x13-stochastic-v0
+maze-img-15x15-stochastic-v0
+maze-img-17x17-stochastic-v0
+maze-img-19x19-stochastic-v0
+maze-img-25x25-stochastic-v0
+maze-img-35x35-stochastic-v0
+maze-img-55x55-stochastic-v0
+maze-img-9x9-stochastic-v0
 ```
 
 ## Licence
