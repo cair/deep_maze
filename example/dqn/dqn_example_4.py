@@ -8,7 +8,7 @@ import time
 import tensorflow as tf
 from keras import Input
 from keras.engine import Model
-from keras.layers import Conv2D, K, Flatten, Dense
+from keras.layers import Conv2D, K, Flatten, Dense, AveragePooling2D
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.utils import plot_model
@@ -140,28 +140,28 @@ class DQN:
         return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
 
     def _build_model(self):
-        """
-        n_rounting = 3
+
+        n_routing = 3
 
         x = Input(shape=self.state_size)
-        conv1 = Conv2D(filters=256, kernel_size=2, strides=1, padding='valid', activation='relu', name='conv1')(x)
+        conv1 = Conv2D(filters=256, kernel_size=1, strides=1, padding='valid', activation='relu', name='conv1')(x)
         primarycaps = PrimaryCap(conv1, dim_vector=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
-        digitcaps = CapsuleLayer(num_capsule=self.action_size, dim_vector=16, num_routing=n_rounting, name='digitcaps')(primarycaps)
+        digitcaps = CapsuleLayer(num_capsule=self.action_size, dim_vector=16, num_routing=n_routing, name='digitcaps')(primarycaps)
         out_caps = Length(name='out_caps')(digitcaps)
 
         model = Model(inputs=[x], outputs=[out_caps])
-        model.compile(optimizer="adam", loss=self._huber_loss)
+        model.compile(optimizer=Adam(lr=self.learning_rate), loss=self._huber_loss)
+
         """
-        #"""
         model = Sequential()
         model.add(Conv2D(256, (1, 1), strides=(1, 1), activation="relu", input_shape=self.state_size))
         model.add(Conv2D(256, (1, 1), strides=(1, 1), activation="relu"))
         model.add(Conv2D(256, (1, 1), strides=(1, 1), activation="relu"))
         model.add(Flatten())
-        model.add(Dense(1024, activation="relu"))
+        model.add(Dense(512, activation="relu"))
         model.add(Dense(self.action_size, activation="linear"))
         model.compile(optimizer=Adam(lr=self.learning_rate), loss=self._huber_loss)
-        #"""
+        """
 
         plot_model(model, to_file='model.png', show_layer_names=True, show_shapes=True)
         SVG(model_to_dot(model).create(prog='dot', format='svg'))

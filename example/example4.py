@@ -15,14 +15,14 @@ if __name__ == '__main__':
 
     env_list = [
         "maze-arr-9x9-full-deterministic-v0",
-        "maze-arr-11x11-full-deterministic-v0",
-        "maze-arr-13x13-full-deterministic-v0",
-        "maze-arr-15x15-full-deterministic-v0",
-        "maze-arr-17x17-full-deterministic-v0",
+        #"maze-arr-11x11-full-deterministic-v0",
+        #"maze-arr-13x13-full-deterministic-v0",
+        #"maze-arr-15x15-full-deterministic-v0",
+        #"maze-arr-17x17-full-deterministic-v0",
         #"maze-arr-19x19-full-deterministic-v0",
         #"maze-arr-25x25-full-deterministic-v0",
         #"maze-arr-35x35-full-deterministic-v0",
-        #"maze-arr-55x55-full-deterministic-v0"
+        # "maze-arr-55x55-full-deterministic-v0"
     ]
 
     env = gym.make(env_list[-1])
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     train_epochs = 8
     memory_size = 1000
     timeout = 1000
+    epsilon_increase = False
 
     agent = DQN(
         env.observation_space,
@@ -42,10 +43,11 @@ if __name__ == '__main__':
         train_epochs=1,
         e_min=0,
         e_max=1.0,
-        e_steps=100000,
+        e_steps=10000,
         lr=1e-6,
         discount=0.95
     )
+    agent.model.summary()
     try:
         agent.load("./model_weights.h5")
     except:
@@ -79,7 +81,7 @@ if __name__ == '__main__':
                     timestep += 1
 
                     # Draw environment on screen
-                    #env.render()  # For image you MUST call this
+                    env.render()  # For image you MUST call this
 
                     # Draw action from distribution
                     action = agent.act(state, force_exploit=True if phase == "exploit" else False)
@@ -107,12 +109,13 @@ if __name__ == '__main__':
 
                         break
                     elif timestep >= timeout:
-                        agent.epsilon = min(agent.epsilon_max, agent.epsilon + (agent.epsilon_decay * timestep))
+                        if epsilon_increase:
+                            agent.epsilon = min(agent.epsilon_max, agent.epsilon + (agent.epsilon_decay * timestep))
                         phase = "explore"
                         perfect_in_row = 0
                         break
 
-                if len(agent.memory) > batch_size:
+                if len(agent.memory) > agent.batch_size:
                     agent.replay(q_table=env.env.q_table)
 
                 env.render()  # For image you MUST call this
