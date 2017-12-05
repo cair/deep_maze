@@ -1,4 +1,5 @@
 # Maze environment for GYM
+![Deterministic Environments][deterministic_environments.png]
 
 ## Installation
 ```bash
