@@ -26,15 +26,15 @@ max_val = max(y_values)
 
 
 map_sizes = [
-    (7, 7),
-    (9, 9),
-    (11, 11),
-    (13, 13),
-    (15, 15),
-    (17, 17),
-    (19, 19),
-    (25, 25),
-    (35, 35),
+    (7, 7, True),
+    (9, 9, False),
+    (11, 11, True),
+    (13, 13, False),
+    (15, 15, True),
+    (17, 17, False),
+    (19, 19, True),
+    (25, 25, False),
+    (35, 35, True),
 ]
 
 
@@ -48,27 +48,28 @@ trace = go.Scatter(
 )
 
 trace1 = go.Scatter(
-    x=[x*y for x, y in map_sizes],
-    y=[max_val * 1.03 for x, y in map_sizes],
-    text=["%sx%s" % (x, y) for x, y in map_sizes],
+    x=[x*y for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
+    y=[max_val * 1.03 for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
+    text=["%sx%s" % (x, y) for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
     mode="text",
     name="Maze Size/N-states"
 )
 
 trace2 = go.Scatter(
-    x=[(x*y) for x, y in map_sizes],
-    y=[max_val * 1.01 for x, y in map_sizes],
-    text=["%s" % int(scipy.special.comb(x*y, 2)) for x, y in map_sizes],
+    x=[(x*y) for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
+    y=[max_val * 1.01 for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
+    text=["%s" % int(scipy.special.comb(x*y, 2)) for x, y, show in [(x, y, show) for x, y, show in map_sizes if show]],
     mode="text",
     name="States",
-    showlegend=False
+    showlegend=False,
 )
 
 
 data = [trace, trace1, trace2]
 
 layout = {
-    'title': "Deep Maze State-Space",
+    #'title': "Deep Maze State-Space",
+    'font':dict( size=20, color='#7f7f7f'),
     'xaxis': {
         'range': [0, N],
         'showticklabels': False,
@@ -91,7 +92,7 @@ layout = {
                 'color': 'rgb(255, 0, 0)',
                 'width': 3,
             },
-        } for x, y in map_sizes
+        } for x, y, show in map_sizes
     ]
 }
 fig = {
@@ -100,4 +101,4 @@ fig = {
 }
 py.plot(
     fig,
-    filename='basic-line', )
+    filename='basic-line')
