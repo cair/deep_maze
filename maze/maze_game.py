@@ -1,11 +1,27 @@
-import random
 from queue import PriorityQueue
-
 import numpy as np
-import scipy.misc
 import pygame
-
 from maze import Maze
+
+
+class Sprite(pygame.sprite.DirtySprite):
+    def __init__(self, color, x, y, w, h):
+        pygame.sprite.DirtySprite.__init__(self)
+        self.w = w
+        self.h = h
+        self.image = pygame.Surface((w, h))
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.move(x, y)
+
+    def update(self, *args):
+        self.dirty = 1
+
+    def set_color(self, color):
+        pass
+
+    def move(self, x, y):
+        self.rect.move_ip(x * self.w, y * self.h)
 
 
 class MazeGame:
@@ -18,13 +34,16 @@ class MazeGame:
         pygame.display.set_caption("DeepMaze")
 
         self.width, self.height = maze_size
+        self.tile_width, self.tile_height = int(screen_size[0] / maze_size[0]), int(screen_size[1] / maze_size[1])
 
         self.font = pygame.font.SysFont("Arial", size=16)
         self.screen = pygame.display.set_mode(screen_size, 0, 32)
 
-
-        self.surface_maze = pygame.Surface(self.screen.get_size()).convert()
-        self.surface_player = pygame.Surface(self.screen.get_size()).convert()
+        self.surface = pygame.Surface(self.screen.get_size()).convert()
+        self.sprite_maze = [Sprite(color=(255, 0, 255), x=x, w=self.tile_width, y=y, h=self.tile_height) for x in range(self.width) for y in range(self.height)]
+        self.sprite_player = Sprite(color=(0, 255, 0), x=0, y=0, w=self.tile_width, h=self.tile_height)
+        self.sprite_target = Sprite(color=(255, 0, 0), x=0, y=0, w=self.tile_width, h=self.tile_height)
+        self.sprites = pygame.sprite.LayeredDirty(self.sprite_maze, [self.sprite_player, self.sprite_target])
 
         # Maze
         self.maze = None
@@ -39,17 +58,30 @@ class MazeGame:
         pass
 
     def reset(self):
-
         # Create new maze
         self.maze = Maze(width=self.width, height=self.height)
+
+        # Update sprite color reflecting the maze state
+        for i in range(self.width * self.height):
+            x = i % self.width
+            y = int((i - x) / self.width)
+
+            val = self.maze.grid[x, y]
+
+            if val == 0:
+                self.sprites.get_sprite(i).image.fill(color=(255, 255, 255))
+            elif val == 1:
+                self.sprites.get_sprite(i).image.fill(color=(0, 0, 0))
 
         # Set player positions
         self.player, self.target = self.spawn_players()
 
+        # Update player sprites
+        self.sprite_player.move(*self.player)
+        self.sprite_target.move(*self.target)
+
         # Return state
         return self.get_state()
-
-
 
     def spawn_players(self):
         """
@@ -72,60 +104,11 @@ class MazeGame:
         return start_positions
 
     def _draw(self):
-
-        self.surface.fill((0, 0, 0))
-
-        for (x, y), value in np.ndenumerate(self.maze.grid):
-            pos = (x * self.tile_w, y * self.tile_h, self.tile_w + 1, self.tile_h + 1)
-            color = 0xFFFFFF
-            if value == 1:
-                color = 0x000000
-            pygame.draw.rect(self.surface, color, pos)
-
-            if value == 0:
-
-                """txt_type = self.q_table[x, y]
-                if txt_type == 1:
-                    self.surface.blit(self.txt_down, (pos[0] + 8, pos[1] + 8))  # Down
-                if txt_type == 2:
-                    self.surface.blit(self.txt_up, (pos[0] + 8, pos[1] + 8))  # Up
-                if txt_type == 3:
-                    self.surface.blit(self.txt_left, (pos[0] + 8, pos[1] + 8))  # Left
-                if txt_type == 4:
-                    self.surface.blit(self.txt_right, (pos[0] + 8, pos[1] + 8))  # Right"""
-
-        """pygame.draw.rect(self.surface, 0x00FF00,
-                         (self.player[0] * self.tile_w, self.player[1] * self.tile_h, self.tile_w, self.tile_h))
-        pygame.draw.rect(self.surface, 0xFF0000,
-                         (self.target[0] * self.tile_w, self.target[1] * self.tile_h, self.tile_w, self.tile_h))
-        """
+        rectangles = self.sprites.draw(self.surface)
         self.screen.blit(self.surface, (0, 0))
-
-        pygame.display.flip()
-
-    def dfs(self, start, goal):
-        stack = [(start, [start])]
-
-        possible_path = PriorityQueue()
-
-
-        while stack:
-            (vertex, path) = stack.pop()
-            legal_cells = set(self.legal_directions(*vertex)) - set(path)
-            for next in legal_cells:
-                if next == goal:
-                    full_path = path + [next]
-                    length = len(path)
-                    possible_path.put((length, full_path))
-                else:
-                    stack.append((next, path + [next]))
-
-        return possible_path.get()
-
-
+        pygame.display.update(rectangles)
 
     def render(self):
-
         self._draw()
 
 
