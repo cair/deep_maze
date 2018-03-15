@@ -24,7 +24,7 @@ def randomized_prim(grid, start_position=(0, 0)):
             if x >= 2 and grid[x-2, y] == 1:
                 frontiers.append(((x-1, y), (x-2, y)))
 
-            if  x < width-2 and grid[x+2, y] == 1:
+            if x < width-2 and grid[x+2, y] == 1:
                 frontiers.append(((x+1, y), (x+2, y)))
 
             if y >= 2 and grid[x, y-2] == 1:
