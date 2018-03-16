@@ -1,5 +1,0 @@
-cython
-numpy
-pygame
-scipy
-pillow
