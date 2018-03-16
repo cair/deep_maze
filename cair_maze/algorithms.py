@@ -1,6 +1,4 @@
 import random
-from enum import IntEnum
-import numpy as np
 
 
 def randomized_prim(grid, start_position=(0, 0)):

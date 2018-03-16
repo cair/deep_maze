@@ -1,15 +1,17 @@
-import inspect
-
-from abc import abstractmethod, ABC
-
 import math
+import inspect
+from abc import abstractmethod, ABC
 
 
 class BaseMazeMechanic(ABC):
 
     def __init__(self, maze_game, **kwargs):
+        """
+        The BaseMazeMechanic. Cannot be initialized
+        :param maze_game: MazeGame instance
+        :param kwargs: dict of custom arguments
+        """
         # Retrieve the stack to backtrack the caller class
-
         called_by_maze_game = False
         for stack_item in inspect.stack():
             if "self" in stack_item[0].f_locals.keys():
@@ -37,6 +39,11 @@ class BaseMazeMechanic(ABC):
 
 class NormalMaze(BaseMazeMechanic):
     def __init__(self, maze_game, **kwargs):
+        """
+        NormalMaze. Has no additional mechanics
+        :param maze_game: MazeGame instance
+        :param kwargs: dict of custom arguments
+        """
         super().__init__(maze_game, **kwargs)
 
     def on_start(self):
@@ -51,6 +58,11 @@ class NormalMaze(BaseMazeMechanic):
 
 class POMDPMaze(BaseMazeMechanic):
     def __init__(self, maze_game, **kwargs):
+        """
+        The POMDPMaze. Adds FOW
+        :param maze_game: MazeGame instance
+        :param kwargs: dict of custom arguments
+        """
         super().__init__(maze_game, **kwargs)
 
         self.vision = kwargs.get("vision")
@@ -106,6 +118,11 @@ class POMDPMaze(BaseMazeMechanic):
 
 
 class POMDPLimitedMaze(POMDPMaze):
+    """
+    The POMDPLimitedMaze. Further adds FOW to walls
+    :param maze_game: MazeGame instance
+    :param kwargs: dict of custom arguments
+    """
     def __init__(self, maze_game, **kwargs):
         super().__init__(maze_game, **kwargs)
         self.target_index = None
@@ -202,6 +219,11 @@ class TimedPOMDPLimitedMaze(POMDPLimitedMaze):
 
 
 class TimedPOMDPMaze(POMDPMaze):
+    """
+    The TimedPOMDPMaze. Adds FOW after a delay (ticks)
+    :param maze_game: MazeGame instance
+    :param kwargs: dict of custom arguments
+    """
     def __init__(self, maze_game, **kwargs):
         super().__init__(maze_game, **kwargs)
         self.delay = kwargs.get("delay") if kwargs.get("delay") else 5

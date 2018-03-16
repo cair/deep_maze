@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import random
+import time
 import numpy as np
 
-from algorithms import recursive_backtracking, randomized_prim
-
-
+from .algorithms import recursive_backtracking, randomized_prim
 
 
 class ActionSpace:
@@ -18,23 +17,28 @@ class ActionSpace:
 
 class StateSpace:
     def __init__(self, game):
-        self.shape = game.get_shape().shape
+        self.shape = game.grid.shape
 
 
 class Maze:
     def __init__(self,
                  width=15,
                  height=15,
-                 complexity=1,
-                 density=1,
-                 seed_action=1337,
+                 seed_action=time.time(),
                  maze_algorithm="randomized_prim"):
+        """
+        Maze Instance, Contains maze generator and the data related to it
+        :param width: width of the maze in tiles
+        :param height: height of the maze in tiles
+        :param seed_action: seed of the action sampler
+        :param maze_algorithm: the generator algorithm. currently supported: randomized_prim
+        """
 
         self.width = width
         self.height = height
         self.grid = np.zeros((width, height), dtype=np.uint8)
         self.action_space = ActionSpace(seed=seed_action)
-        #self.state_space = StateSpace(self)
+        self.state_space = StateSpace(self)
         self.maze_algorithm = maze_algorithm
 
         # Generate the maze structure

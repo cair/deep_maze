@@ -1,14 +1,11 @@
-import pygame
-from maze_game import MazeGame
+from cair_maze.maze_game import MazeGame
 import random
 import time
-import skimage.io
-from mechanics import TimedPOMDPMaze
 if __name__ == "__main__":
 
-    m = MazeGame((11, 11), mechanic=TimedPOMDPMaze, mechanic_args=dict(vision=3))
+    m = MazeGame((11, 11), mechanic=MazeGame.POMDPMaze, mechanic_args=dict(vision=3))
     m.set_preprocess(dict(
-        #image=dict(),
+        image=dict(),
         #resize=dict(size=(84, 84)),
         #grayscale=dict()
     ))
@@ -17,7 +14,7 @@ if __name__ == "__main__":
     now = time.time()
     while True:
         a = random.randint(0, 3)
-        #m.render()
+        m.render()
         data = m.step(a)
 
 

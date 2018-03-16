@@ -1,4 +1,4 @@
 numpy
 pygame
 scikit-image
-requests
+gym

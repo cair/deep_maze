@@ -2,34 +2,17 @@ import pygame
 from skimage import color, transform, exposure
 from math import ceil
 import numpy as np
-from maze import Maze
-from pathfinding import dfs
-from mechanics import NormalMaze
-
-
-class Sprite(pygame.sprite.DirtySprite):
-    def __init__(self, color, x, y, w, h):
-        pygame.sprite.DirtySprite.__init__(self)
-        self.w = w
-        self.h = h
-        self.image = pygame.Surface((w, h))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.move(x, y)
-
-        self.original_color = color
-
-    def set_color(self, color):
-        self.image.fill(color)
-        self.dirty = 1
-
-    def move(self, x, y):
-        self.rect.x = x * self.w
-        self.rect.y = y * self.h
-        self.dirty = 1
+from .maze import Maze
+from .pathfinding import dfs
+from .mechanics import TimedPOMDPMaze, POMDPMaze, POMDPLimitedMaze, NormalMaze, TimedPOMDPLimitedMaze
 
 
 class MazeGame:
+    NormalMaze = NormalMaze
+    POMDPMaze = POMDPMaze
+    POMDPLimitedMaze = POMDPLimitedMaze
+    TimedPOMDPMaze = TimedPOMDPMaze
+    TimedPOMDPLimitedMaze = TimedPOMDPLimitedMaze
 
     def __init__(self, maze_size,
                  screen_size=(640, 480),
@@ -37,6 +20,19 @@ class MazeGame:
                  mechanic_args=None,
                  colors=None,
                  ):
+        """
+        MazeGame Constructor that creates a full maze-game environment
+        :param maze_size: tuple of w and h value (10, 10)
+        :param screen_size: tuple of w and h value (640, 480)
+        :param mechanic: A uninitialized class that inherits the BaseMechanic class. default is None
+        :param mechanic_args: A dict of properties sent to the mechanic class, default is None
+        :param colors: dict(
+            goal=(255, 0, 0),
+            player=(0, 255, 0),
+            wall=(255, 255, 255),
+            floor=(0, 0, 0)
+        )
+        """
         #############################################################
         ##
         # Input Manipulation
@@ -129,6 +125,16 @@ class MazeGame:
         self.reset()
 
     def set_preprocess(self, preprocess=None):
+        """
+        Set pre-processing flags of MazeGame.get_state() There are two modes primarily: Image and Array (raw) where
+        the default mode is raw.
+        :param preprocess: dict(
+            image=dict(),
+            resize=dict(size=(84, 84)),
+            grayscale=dict()
+        )
+        :return: None
+        """
         preprocess = dict(
             image=dict(),
             resize=dict(size=(84, 84)),
@@ -140,10 +146,14 @@ class MazeGame:
         self.preprocess_grayscale = True if "grayscale" in preprocess else None
 
     def get_state(self):
+        """
+        Retrieve a state representation. This can be configured using MazeGame.set_preprocess(preprocess=dict)
+        :return: A numpy formatted state representation
+        """
 
         if self.preprocess_image:
             state = pygame.surfarray.pixels3d(self.surface)
-
+            state = np.array(state)
             if self.preprocess_resize is not None:
                 state = transform.resize(state, self.preprocess_resize, mode='constant')
 
@@ -159,6 +169,10 @@ class MazeGame:
         return state
 
     def reset(self):
+        """
+        Resets the game-state
+        :return: The State
+        """
         # Create new maze
         self.maze = Maze(width=self.width, height=self.height)
 
@@ -197,7 +211,8 @@ class MazeGame:
 
     def spawn_players(self):
         """
-        Returns a random position on the maze.
+        Spawns the players at two "random" locations
+        :return:
         """
         start_positions = []
         for start_position in [(0, 0), (self.width - 1, self.height - 1)]:
@@ -216,18 +231,32 @@ class MazeGame:
         return start_positions
 
     def render(self):
+        """
+        Render the game-state to the SCREEN (For visualizing, not required for drawing the state to the SURFACE)
+        :return:
+        """
         if not self.preprocess_image:
             self.rectangles = self.sprites.draw(self.surface)
         self.screen.blit(self.surface, (0, 0))
         pygame.display.update(self.rectangles)
 
     def on_return(self, reward):
+        """
+        Call back that generates a gym compatible return tuple
+        :param reward:
+        :return:
+        """
         return self.get_state(), reward, self.terminal, dict(
             optimal_steps=self.maze_optimal_path_length,
             step_count=self.player_steps
         )
 
     def step(self, a):
+        """
+        The step function is a gym-compatible step function
+        :param a: Action index from 0 - 3
+        :return: s, r, t, options
+        """
         r = 0
         if self.terminal:
             r = 1
@@ -254,7 +283,12 @@ class MazeGame:
 
         return self.on_return(r)
 
-    def quit(self):
+    @staticmethod
+    def quit():
+        """
+        Exit the pygame display engine
+        :return:
+        """
         try:
             pygame.display.quit()
             pygame.quit()
@@ -275,9 +309,21 @@ class MazeGame:
             raise RuntimeError("Action must be a integer value between 0 and 3")
 
     def is_legal(self, x, y):
+        """
+        Determine whether a position (x, y) is legal or illegal in current state
+        :param x: x coordinate of the proposed position
+        :param y: y coordinate of the proposed position
+        :return: Boolean
+        """
         return True if 0 <= x < self.width and 0 <= y < self.height and self.maze.grid[x, y] == 0 else False
 
     def legal_directions(self, x, y):
+        """
+        Retrieve legal direction of current position
+        :param x: x coordinate of the position
+        :param y: y coordinate of the position
+        :return: List of legal positions
+        """
         legal = []
 
         possible_moves = [
@@ -292,3 +338,25 @@ class MazeGame:
                 legal.append((x, y))
 
         return legal
+
+
+class Sprite(pygame.sprite.DirtySprite):
+    def __init__(self, color, x, y, w, h):
+        pygame.sprite.DirtySprite.__init__(self)
+        self.w = w
+        self.h = h
+        self.image = pygame.Surface((w, h))
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.move(x, y)
+
+        self.original_color = color
+
+    def set_color(self, color):
+        self.image.fill(color)
+        self.dirty = 1
+
+    def move(self, x, y):
+        self.rect.x = x * self.w
+        self.rect.y = y * self.h
+        self.dirty = 1
