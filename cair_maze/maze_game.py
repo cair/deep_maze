@@ -1,4 +1,5 @@
 import pygame
+from collections import deque
 from skimage import color, transform, exposure
 from math import ceil
 import numpy as np
@@ -48,7 +49,7 @@ class MazeGame:
         #############################################################
         pygame.init()
         pygame.font.init()
-        pygame.display.set_caption("DeepMaze")
+        pygame.display.set_caption("Deep Maze - v2.0")
 
         #############################################################
         ##
@@ -216,17 +217,28 @@ class MazeGame:
         """
         start_positions = []
         for start_position in [(0, 0), (self.width - 1, self.height - 1)]:
-            visited, queue = set(), [start_position]
+            queue = deque()
+            queue.append(start_position)
+            visited = []
             while queue:
-                vertex = queue.pop(0)
+                t = queue.popleft()
 
-                if self.maze.grid[vertex[0], vertex[1]] == 0:
-                    start_positions.append(vertex)
+                if self.maze.grid[t[0], t[1]] == 0:
+                    start_positions.append(t)
                     queue.clear()
                     continue
-                if vertex not in visited:
-                    visited.add(vertex)
-                    queue.extend(self.maze.grid[vertex[0], vertex[1]] - visited)
+                if t not in visited:
+                    visited.append(t)
+
+                x, y = t
+                if 0 <= x - 1:
+                    queue.append((x - 1, y))
+                if x < self.width - 1:
+                    queue.append((x + 1, y))
+                if 0 <= y - 1:
+                    queue.append((x, y - 1))
+                if y < self.height - 1:
+                    queue.append((x, y + 1))
 
         return start_positions
 
@@ -259,7 +271,7 @@ class MazeGame:
         """
         r = 0
         if self.terminal:
-            r = 1
+            return self.on_return(1)
         else:
             dx, dy = MazeGame.to_action(a)
             x, y = self.player

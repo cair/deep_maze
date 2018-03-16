@@ -10,13 +10,12 @@ pip install git+https://github.com/CAIR-UIA/gym-maze.git
 ```python
 import gym
 import gym_maze # This is required in order to load gym-maze
-import os
 
 if __name__ == '__main__':
     
 
     # Reset environment
-    env = gym.make("maze-arr-11x11-full-deterministic-v0")
+    env = gym.make("Maze-Arr-5x5-POMDPMaze-v0")
     s = env.reset()
 
     # Set terminal state to false
@@ -39,78 +38,24 @@ if __name__ == '__main__':
 ## Available Environments
 There are several configurations available for gym-maze.
 
-### Naming Convention
-[name]-[representation]-[size_w]x[size_h]-[type]-v0
+### Fully Observable Maze
+Everything is shown, no hidden information
+![./documentation/normal_maze.png](./documentation/normal_maze.png)
 
-**name** - Name of the environment
+### Partially Observable Maze
+A small area around the player is shown, rest is hidden
+![./documentation/maze_pomdp.png](./documentation/maze_pomdp.png)
 
-**representation** - How the state is represented to the user. 'Img' delivers a **84x84x3** state while 'Arr' delivers size of the game board (9x9 game delivers  9x9 state)
+### Limited Partially Observable Maze
+Only the logical vision (Cannot see past walls #collison)
+![./documentation/pomdplimited.png](./documentation/pomdplimited.png)
 
-**size_w** - Indicates width of game board
-
-**size_h** - Indicates height of game board
-
-**type** - Indicates weither RNG is deterministic (non-random) or stochastic (random). There is also a full-random mode that also remove randomness from spawn location
+### Timed Limited Partially Observable Maze
+The whole maze is initially shown, After X timesteps, the maze is hidden
 
 
 ### Environment List
-```
-maze-arr-11x11-deterministic-v0
-maze-arr-13x13-deterministic-v0
-maze-arr-15x15-deterministic-v0
-maze-arr-17x17-deterministic-v0
-maze-arr-19x19-deterministic-v0
-maze-arr-25x25-deterministic-v0
-maze-arr-35x35-deterministic-v0
-maze-arr-55x55-deterministic-v0
-maze-arr-9x9-deterministic-v0
-maze-arr-11x11-full-deterministic-v0
-maze-arr-13x13-full-deterministic-v0
-maze-arr-15x15-full-deterministic-v0
-maze-arr-17x17-full-deterministic-v0
-maze-arr-19x19-full-deterministic-v0
-maze-arr-25x25-full-deterministic-v0
-maze-arr-35x35-full-deterministic-v0
-maze-arr-55x55-full-deterministic-v0
-maze-arr-9x9-full-deterministic-v0
-maze-arr-11x11-stochastic-v0
-maze-arr-13x13-stochastic-v0
-maze-arr-15x15-stochastic-v0
-maze-arr-17x17-stochastic-v0
-maze-arr-19x19-stochastic-v0
-maze-arr-25x25-stochastic-v0
-maze-arr-35x35-stochastic-v0
-maze-arr-55x55-stochastic-v0
-maze-arr-9x9-stochastic-v0
-maze-v0
-maze-img-11x11-deterministic-v0
-maze-img-13x13-deterministic-v0
-maze-img-15x15-deterministic-v0
-maze-img-17x17-deterministic-v0
-maze-img-19x19-deterministic-v0
-maze-img-25x25-deterministic-v0
-maze-img-35x35-deterministic-v0
-maze-img-55x55-deterministic-v0
-maze-img-9x9-deterministic-v0
-maze-img-11x11-full-deterministic-v0
-maze-img-13x13-full-deterministic-v0
-maze-img-15x15-full-deterministic-v0
-maze-img-17x17-full-deterministic-v0
-maze-img-19x19-full-deterministic-v0
-maze-img-25x25-full-deterministic-v0
-maze-img-35x35-full-deterministic-v0
-maze-img-55x55-full-deterministic-v0
-maze-img-9x9-full-deterministic-v0
-maze-img-11x11-stochastic-v0
-maze-img-13x13-stochastic-v0
-maze-img-15x15-stochastic-v0
-maze-img-17x17-stochastic-v0
-maze-img-19x19-stochastic-v0
-maze-img-25x25-stochastic-v0
-maze-img-35x35-stochastic-v0
-maze-img-55x55-stochastic-v0
-maze-img-9x9-stochastic-v0
-```
+A complete list of environments han be seen [here](./documentation/env_list.md)
 
 ## Licence
 Copyright 2017 Per-Arne Andersen
@@ -120,3 +65,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
