@@ -1,5 +1,5 @@
 # Maze environment for GYM
-![Deterministic Environments](https://github.com/UIA-CAIR/gym-maze/blob/master/deterministic_environments.png)
+![Deterministic Environments](./documentation/deterministic_environments.png)
 
 ## Installation
 ```bash
