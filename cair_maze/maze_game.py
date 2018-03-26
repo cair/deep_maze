@@ -148,12 +148,12 @@ class MazeGame:
         preprocess = dict(
             image=dict(),
             resize=dict(size=(84, 84)),
-            grayscale=dict()
+            grayscale=None
         ) if preprocess is None else preprocess
 
         self.preprocess_image = True if "image" in preprocess else None
         self.preprocess_resize = preprocess["resize"]["size"] if "resize" in preprocess else None
-        self.preprocess_grayscale = True if "grayscale" in preprocess else None
+        self.preprocess_grayscale = True if preprocess["grayscale"] is not None else None
 
     def get_state(self):
         """
