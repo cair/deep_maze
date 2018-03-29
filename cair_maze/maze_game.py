@@ -20,6 +20,7 @@ class MazeGame:
                  mechanic=NormalMaze,
                  mechanic_args=None,
                  colors=None,
+                 options=None
                  ):
         """
         MazeGame Constructor that creates a full maze-game environment
@@ -41,6 +42,14 @@ class MazeGame:
         #############################################################
         mechanic_args = {} if mechanic_args is None else mechanic_args
         colors = {} if colors is None else colors
+        self.options = dict(
+            algorithm="randomized_prim",
+            disable_target=False
+        )
+        if options:
+            self.options.update(options)
+
+
 
         #############################################################
         ##
@@ -139,12 +148,12 @@ class MazeGame:
         preprocess = dict(
             image=dict(),
             resize=dict(size=(84, 84)),
-            grayscale=dict()
+            grayscale=None
         ) if preprocess is None else preprocess
 
         self.preprocess_image = True if "image" in preprocess else None
         self.preprocess_resize = preprocess["resize"]["size"] if "resize" in preprocess else None
-        self.preprocess_grayscale = True if "grayscale" in preprocess else None
+        self.preprocess_grayscale = True if preprocess["grayscale"] is not None else None
 
     def get_state(self):
         """
@@ -175,7 +184,7 @@ class MazeGame:
         :return: The State
         """
         # Create new maze
-        self.maze = Maze(width=self.width, height=self.height)
+        self.maze = Maze(width=self.width, height=self.height, maze_algorithm=self.options["algorithm"])
 
         # Update sprite color reflecting the maze state
         for i in range(self.width * self.height):
@@ -187,12 +196,17 @@ class MazeGame:
             sprite.set_color(color)
             sprite.original_color = color
 
-        # Set player positions
-        self.player, self.target = self.spawn_players()
+        if self.options["disable_target"]:
+            self.player, _ = self.spawn_players()
+            self.target = (-1, -1)
+        else:
+            # Set player positions
+            self.player, self.target = self.spawn_players()
 
-        # Calculate shortest path
-        self.maze_optimal_path = dfs(self, self.player, self.target)
-        self.maze_optimal_path_length = self.maze_optimal_path[0]
+            # Calculate shortest path
+
+            self.maze_optimal_path = dfs(self, self.player, self.target)
+            self.maze_optimal_path_length = self.maze_optimal_path[0]
 
         # Update player sprites
         self.sprite_player.move(*self.player)

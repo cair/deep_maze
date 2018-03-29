@@ -7,6 +7,7 @@ from .algorithms import recursive_backtracking, randomized_prim
 
 
 class ActionSpace:
+
     def __init__(self, seed):
         self.shape = 4
         self._random = random.Random(x=seed)
@@ -21,11 +22,10 @@ class StateSpace:
 
 
 class Maze:
-    def __init__(self,
-                 width=15,
-                 height=15,
-                 seed_action=time.time(),
-                 maze_algorithm="randomized_prim"):
+    """
+    Maze Class, Creates a Maze Instance that contains the internal data of the maze.
+    """
+    def __init__(self, width=15, height=15, seed_action=time.time(), maze_algorithm="randomized_prim"):
         """
         Maze Instance, Contains maze generator and the data related to it
         :param width: width of the maze in tiles
@@ -45,9 +45,17 @@ class Maze:
         self._generate()
 
     def _generate(self):
+        """
+        Generates the maze based on which algorithm was defined in the constructor
+        :return: None
+        """
         if self.maze_algorithm == "recursive_backtracking":
             recursive_backtracking(self.grid)
-        if self.maze_algorithm == "randomized_prim":
+        elif self.maze_algorithm == "randomized_prim":
             randomized_prim(self.grid)
+        elif self.maze_algorithm == "none":
+            pass
+        else:
+            raise Exception("No maze generation algorithm called %s" % self.maze_algorithm)
 
 
