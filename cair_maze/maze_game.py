@@ -175,7 +175,7 @@ class MazeGame:
             state = np.array(self.maze.grid, copy=True)
             state[self.player[0], self.player[1]] = 2
             state[self.target[0], self.target[1]] = 3
-            state *= 255
+        state *= 255
         return state
 
     def reset(self):
@@ -220,6 +220,9 @@ class MazeGame:
 
         # Reset Player step to 0
         self.player_steps = 0
+
+        # Render ??? TODO
+        self.rectangles = self.sprites.draw(self.surface)
 
         # Return state
         return self.get_state()

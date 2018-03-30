@@ -1,20 +1,53 @@
 import random
-
+import glob
 import os
-from py_image_stitcher import ImageStitch
+import numpy as np
+#from py_image_stitcher import ImageStitch
 from tensorflow.python.keras import Input
 
 from tensorflow.python.keras.layers import Conv2D, Flatten, Dense, concatenate, Reshape, UpSampling2D
 from tensorflow.python.keras.models import Sequential, Model
 from tensorflow.python.keras.optimizers import Adam
 
+from example.dcgan_example.memory import ReplayMemory
+from example.dcgan_example.util import config_class
+
 
 class Dream:
 
-    def __init__(self, config, memory):
+    def __init__(self, config, memory, model=None, path="./"):
         self.config = config
         self.memory = memory
-        self.model = self.build_model()
+        self.model = self.build_model() if model is None else model
+        self.path = path
+        os.makedirs(os.path.join(self.path, "models"), exist_ok=True)
+
+    def save_model(self, suffix=""):
+        self.model.save_weights(os.path.join(self.path, "models", "model%s.h5" % suffix))
+
+    def load_model(self, model_file=None):
+        if model_file is None:
+            list_of_files = glob.glob(os.path.join(self.path, "models", "*.h5"))
+            model_file = max(list_of_files, key=os.path.getctime)
+        print(model_file)
+        self.model.load_weights(model_file)
+
+    @staticmethod
+    def create_default(path="./"):
+        config = config_class(
+            history_length=1,
+            batch_size=16,
+            screen_width=84,
+            screen_height=84,
+            screen_dim=3,
+            action_size=4,
+            cnn_format="N/A",
+            memory_size=1000
+        )
+
+        memory = ReplayMemory(config)
+        dream = Dream(config, memory, None, path)
+        return dream
 
     def train(self):
         # self.prestates, actions, rewards, self.poststates, terminals
@@ -29,10 +62,16 @@ class Dream:
         terminals = samples[4]
 
         self.model.fit(
-            [actions, prestates],
-            [poststates],
+            [np.array(actions), np.array(prestates)],
+            [np.array(poststates)],
             epochs=1
         )
+
+    def act(self, s0, a):
+        one_hot_a = np.array([1 if y == a else 0 for y in range(0, 4)])
+        s1 = self.model.predict_on_batch([np.array([one_hot_a]), np.array([s0])])
+        return s1[0]
+
 
     def test(self):
         samples = self.memory.sample()
@@ -43,15 +82,16 @@ class Dream:
         poststates = samples[3]
         terminals = samples[4]
 
-        n = int(((8*2) / 2))
+        """n = int(((8*2) / 2))
         X = [actions, prestates]
         X_pred = self.model.predict_on_batch(X)
 
 
         real = X[1]
         fake = X_pred[:n]
+        """
 
-        stitch = ImageStitch((84, 84), rows=8, columns=2)
+        """stitch = ImageStitch((84, 84), rows=8, columns=2)
 
         real_fake = []
         for j in range(int(len(real) / 2)):
@@ -61,6 +101,7 @@ class Dream:
             stitch.add(the_fake.astype('uint8'))
 
         stitch.save("./results.png")
+        """
 
 
 
@@ -109,6 +150,6 @@ class Dream:
             loss=['mse'],
             metrics=['accuracy']
         )
-        model.summary()
+        #model.summary()
 
         return model

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deep Maze Game Simulator</title>
+
+
+
+</head>
+<body>
+
+<div ng-app="DeepMaze" ng-controller="MazeController as vm">
+
+    <h4>Maze Environment Creator</h4>
+    Experiment Name: <input type="text" ng-model="vm.alias" placeholder="Enter Alias/Name">
+    Experiment Size: <select ng-model="vm.maze_size" ng-options="item as item.name for item in vm.maze_sizes" ng-model="selected"></select>
+    <button ng-click="vm.create_experiment(vm.alias, vm.maze_size)">Create!</button>
+    <hr>
+
+        <img width=400
+             height=400
+             ng-if="!vm.previous_state"
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Flag_of_None.svg/1280px-Flag_of_None.svg.png">
+        <img width=400
+             height=400
+             ng-if="vm.previous_state"
+             src="{{vm.previous_state}}">
+
+        <img width=400
+             height=400
+             ng-if="!vm.current_state"
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Flag_of_None.svg/1280px-Flag_of_None.svg.png">
+        <img width=400
+             height=400
+             ng-if="vm.current_state"
+             src="{{vm.current_state}}">
+    <br>
+    <b>Actions: </b>
+
+    <button ng-click="vm.do_action(0)">Down</button>
+    <button ng-click="vm.do_action(1)">Up</button>
+    <button ng-click="vm.do_action(2)">Left</button>
+    <button ng-click="vm.do_action(3)">Right</button>
+
+
+
+
+
+
+    <hr>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Experiment Alias</th>
+                <th>Size</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+        <tbody>
+            <tr ng-repeat="experiment in vm.experiments">
+                <td>{{experiment.alias}}</td>
+                <td>{{experiment.width}} x {{experiment.height}}</td>
+                <td>
+                    <select ng-model="vm.selected_model" ng-options="item as item.filename for item  in experiment.models"></select>
+                </td>
+                <td>
+                    <select ng-model="vm.experiment_action" ng-options="item for item in vm.experiment_actions"></select>
+                    <button ng-click="vm.perform_action(experiment, vm.experiment_action)">Select Experiment</button></td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular-route.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular-resource.min.js"></script>
+<script>
+
+    var app = angular.module('DeepMaze', []);
+
+
+    app.controller('MazeController', function($scope, $http) {
+        var vm = this;
+        vm.alias = null;
+        vm.maze_size = null;
+
+        vm.x_previous_states = [];
+        vm.previous_state = null;
+        vm.current_state = null;
+
+        vm.maze_sizes = [];
+        for(var i = 0; i < 56; i+=2) {
+            vm.maze_sizes.push({name: i + "x" + i, w: i, h: i});
+        }
+
+        vm.experiment_actions = ["train", "test", "delete"];
+        vm.experiments = [];
+        vm.get_experiments = function() {
+
+            $http({
+                method: 'GET',
+                url: '/experiments'
+            }).then(function(response){
+                response.data.data.forEach(function(item){
+                    vm.experiments.push(item)
+                    console.log(":D")
+                })
+            }, function(response){
+                // Error
+            });
+
+        };
+        vm.get_experiments();
+
+
+        vm.create_experiment = function(alias, maze_size) {
+
+            if(!!alias && !!maze_size) {
+
+                $http({
+                    method: 'POST',
+                    url: '/create_experiment',
+                    data: {
+                        alias: alias,
+                        width: maze_size.w,
+                        height: maze_size.h
+                    }
+                }).then(function(response){
+                    // Success
+                }, function(response){
+                    // Error
+                });
+
+            } else {
+                console.log("Missing Input field!")
+            }
+
+        };
+
+        var delete_experiment = function(e_id){
+
+            $http({
+                method: 'POST',
+                url: '/delete_experiment',
+                data: {
+                    id: e_id
+                }
+            }).then(function(response){
+                // Success
+            }, function(response){
+                // Error
+            });
+
+        };
+
+        var train_experiment = function(e_id, selected_model){
+
+            $http({
+                method: 'POST',
+                url: '/train_experiment',
+                data: {
+                    id: e_id,
+                    model: selected_model
+                }
+            }).then(function(response){
+                // Success
+            }, function(response){
+                // Error
+            });
+
+        };
+
+        var test_experiment = function(e_id, selected_model){
+            vm.selected_experiment = {
+                alias: e_id,
+                model: selected_model
+            };
+            $http({
+                method: 'POST',
+                url: '/test_experiment',
+                data: {
+                    id: e_id,
+                    model: selected_model
+                }
+            }).then(function(response){
+
+                vm.current_state = "data:image/png;base64," + response.data.data.base64
+                console.log(vm.current_state)
+
+            }, function(response){
+                // Error
+            });
+
+        };
+        
+        vm.do_action = function (a) {
+
+            $http({
+                method: 'POST',
+                url: '/do_action',
+                data: {
+                    alias: vm.selected_experiment.alias,
+                    model: vm.selected_experiment.model,
+                    action: a
+                }
+            }).then(function(response){
+
+                vm.previous_state = vm.current_state;
+                vm.current_state = "data:image/png;base64," + response.data.data.base64
+
+            }, function(response){
+                // Error
+            });
+            
+        };
+
+        vm.perform_action = function(experiment, action){
+
+            if(action === "train") {
+
+                // Train experiment
+                train_experiment(experiment.alias, vm.selected_model)
+            } else if(action === "test") {
+                // Test experiment
+                test_experiment(experiment.alias, vm.selected_model)
+            } else if(action === "delete") {
+                // Delete experiment
+                delete_experiment(experiment.alias)
+            }
+
+        };
+
+    });
+
+</script>
+
+
+</body>
+</html>

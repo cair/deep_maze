@@ -4,7 +4,7 @@ import gym_maze
 import pygame
 if __name__ == "__main__":
 
-    env = gym.make("Maze-Arr-11x11-NormalMaze-v0")
+    env = gym.make("Maze-Arr-32x32-NormalMaze-v0")
 
     while True:
         a = None
