@@ -16,6 +16,7 @@ def dfs(maze_game, start, goal):
     while stack:
         (vertex, path) = stack.pop()
         legal_cells = set(maze_game.legal_directions(*vertex)) - set(path)
+
         for next in legal_cells:
             if next == goal:
                 full_path = path + [next]
