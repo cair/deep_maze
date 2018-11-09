@@ -3,7 +3,7 @@
 
 ## Installation
 ```bash
-pip install git+https://github.com/CAIR-UIA/gym-maze.git
+pip install git+https://github.com/cair/gym-maze.git
 ```
 
 ## Basic Usage
