@@ -150,7 +150,6 @@ class MazeGame:
                 state = color.rgb2gray(state)
 
             state = state[:, ::-1]
-            state *= 255
 
         elif type == StateType.Array or type == StateType.ArrayFlat:
             state = np.array(self.maze.grid, copy=True)
