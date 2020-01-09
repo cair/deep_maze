@@ -20,32 +20,25 @@ class NoMazeEnv(gym.Env):
         def on_terminal(self):
             pass
 
-    def __init__(self, width, height, state_type):
+    def __init__(self, width, height):
         opt = dict(
             algorithm="none",
             disable_target=True
             )
         self.env = MazeGame((width, height), mechanic=NoMazeEnv.NoMazeMechanic, mechanic_args=None, options=opt)
 
-        if state_type == "image":
-            self.env.set_preprocess(dict(
-                image=dict(),
-                #resize=dict(size=(84, 84)),
-                #grayscale=dict()
-            ))
-
         self.observation_space = self.env.get_state().shape
         self.action_space = 4
 
-    def step(self, action):
-        return self.env.step(action)
+    def step(self, action, type):
+        return self.env.step(action, type)
 
     def reset(self):
         return self.env.reset()
 
-    def render(self, mode='human', close=False):
+    def render(self, mode=0, close=False):
         if close:
             self.env.quit()
             return None
 
-        return self.env.render()
+        return self.env.render(type=mode)

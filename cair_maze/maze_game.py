@@ -6,7 +6,14 @@ import numpy as np
 from .maze import Maze
 from .pathfinding import dfs
 from .mechanics import TimedPOMDPMaze, POMDPMaze, POMDPLimitedMaze, NormalMaze, TimedPOMDPLimitedMaze
+import os
 
+class StateType:
+    ImageRGB = 0
+    ImageGrayScale = 1
+    Array = 2
+    ArrayFlat = 3
+    DEFAULT = 0
 
 class MazeGame:
     NormalMaze = NormalMaze
@@ -56,6 +63,8 @@ class MazeGame:
         # Pygame Initialization
         ##
         #############################################################
+        if "DISPLAY" not in os.environ:
+            os.environ['SDL_VIDEODRIVER'] = 'dummy'
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption("Deep Maze - v2.0")
@@ -121,64 +130,41 @@ class MazeGame:
         #############################################################
         self.mechanic = mechanic(self, **mechanic_args)
 
-        #############################################################
-        ##
-        # Pre-processing
-        ##
-        #############################################################
-        self.preprocess_image = None
-        self.preprocess_resize = None
-        self.preprocess_grayscale = None
-        self.set_preprocess(None)
-
         # Reset the game
         self.reset()
 
-    def set_preprocess(self, preprocess=None):
-        """
-        Set pre-processing flags of MazeGame.get_state() There are two modes primarily: Image and Array (raw) where
-        the default mode is raw.
-        :param preprocess: dict(
-            image=dict(),
-            resize=dict(size=(84, 84)),
-            grayscale=dict()
-        )
-        :return: None
-        """
-        preprocess = dict(
-            image=dict(),
-            resize=dict(size=(84, 84)),
-            grayscale=None
-        ) if preprocess is None else preprocess
-
-        self.preprocess_image = True if "image" in preprocess else None
-        self.preprocess_resize = preprocess["resize"]["size"] if "resize" in preprocess else None
-        self.preprocess_grayscale = True if preprocess["grayscale"] is not None else None
-
-    def get_state(self):
+    def get_state(self, type=StateType.DEFAULT, resize=None):
         """
         Retrieve a state representation. This can be configured using MazeGame.set_preprocess(preprocess=dict)
         :return: A numpy formatted state representation
         """
 
-        if self.preprocess_image:
+        if type == StateType.ImageRGB or type == StateType.ImageGrayScale:
             state = pygame.surfarray.pixels3d(self.surface)
             state = np.array(state)
-            if self.preprocess_resize is not None:
-                state = transform.resize(state, self.preprocess_resize, mode='constant')
 
-            if self.preprocess_grayscale is not None:
+            if resize:
+                state = transform.resize(state, resize, mode='constant')
+
+            if type == StateType.ImageGrayScale:
                 state = color.rgb2gray(state)
 
             state = state[:, ::-1]
-        else:
+            state *= 255
+
+        elif type == StateType.Array or type == StateType.ArrayFlat:
             state = np.array(self.maze.grid, copy=True)
             state[self.player[0], self.player[1]] = 2
             state[self.target[0], self.target[1]] = 3
-        state *= 255
+
+            if type == StateType.ArrayFlat:
+                state = state.flatten()
+        else:
+            raise RuntimeError("Unknown Type")
+
         return state
 
-    def reset(self):
+    def reset(self, type=StateType.DEFAULT):
         """
         Resets the game-state
         :return: The State
@@ -225,7 +211,7 @@ class MazeGame:
         self.rectangles = self.sprites.draw(self.surface)
 
         # Return state
-        return self.get_state()
+        return self.get_state(type=type)
 
     def spawn_players(self):
         """
@@ -259,28 +245,29 @@ class MazeGame:
 
         return start_positions
 
-    def render(self):
+    def render(self, type=StateType.DEFAULT):
         """
         Render the game-state to the SCREEN (For visualizing, not required for drawing the state to the SURFACE)
         :return:
         """
-        if not self.preprocess_image:
-            self.rectangles = self.sprites.draw(self.surface)
+        #if type not in [StateType.ImageRGB, StateType.ImageGrayScale]:
+        self.rectangles = self.sprites.draw(self.surface)
         self.screen.blit(self.surface, (0, 0))
         pygame.display.update(self.rectangles)
+        return self.get_state(type=type)
 
-    def on_return(self, reward):
+    def on_return(self, reward, _type):
         """
         Call back that generates a gym compatible return tuple
         :param reward:
         :return:
         """
-        return self.get_state(), reward, self.terminal, dict(
+        return self.get_state(type=_type), reward, self.terminal, dict(
             optimal_steps=self.maze_optimal_path_length,
             step_count=self.player_steps
         )
 
-    def step(self, a):
+    def step(self, a, type=StateType.DEFAULT):
         """
         The step function is a gym-compatible step function
         :param a: Action index from 0 - 3
@@ -288,7 +275,7 @@ class MazeGame:
         """
         r = 0
         if self.terminal:
-            return self.on_return(1)
+            return self.on_return(1, type)
         else:
             dx, dy = MazeGame.to_action(a)
             x, y = self.player
@@ -300,7 +287,7 @@ class MazeGame:
             self.sprite_player.move(*self.player)
             self.mechanic.on_update()
 
-            if self.preprocess_image:
+            if type in [StateType.ImageRGB, StateType.ImageGrayScale]:
                 self.rectangles = self.sprites.draw(self.surface)
 
         if self.player == self.target:
@@ -310,7 +297,7 @@ class MazeGame:
         else:
             r = -0.01
 
-        return self.on_return(r)
+        return self.on_return(r, type)
 
     @staticmethod
     def quit():

@@ -11,7 +11,7 @@ from cair_maze.maze_game import MazeGame
 
 if __name__ == "__main__":
 
-    env = gym.make("Maze-Arr-11x11-NormalMaze-v0")
+    env = gym.make("Maze-11x11-NormalMaze-v0")
 
     while False:
         a = random.randint(0, 3)
@@ -25,12 +25,6 @@ if __name__ == "__main__":
     # Direct initialization
     m = MazeGame((32, 32), mechanic=MazeGame.NormalMaze, mechanic_args=dict(vision=3))
     path = list(reversed(m.maze_optimal_path[1]))
-
-    m.set_preprocess(dict(
-        image=dict(),
-        #resize=dict(size=(84, 84)),
-        #grayscale=dict()
-    ))
 
     fps = 0
     path.pop()
