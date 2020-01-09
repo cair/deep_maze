@@ -24,4 +24,4 @@ class MazeEnv(gym.Env):
             self.env.quit()
             return None
 
-        return self.env.render()
+        return self.env.render(type=mode)
