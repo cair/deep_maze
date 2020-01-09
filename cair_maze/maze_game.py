@@ -141,7 +141,7 @@ class MazeGame:
 
         if type == StateType.ImageRGB or type == StateType.ImageGrayScale:
             state = pygame.surfarray.pixels3d(self.surface)
-            state = np.array(state)
+            state = np.array(state, dtype=np.uint8)
 
             if resize:
                 state = transform.resize(state, resize, mode='constant')
